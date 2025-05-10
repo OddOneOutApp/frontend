@@ -1,6 +1,11 @@
 import type { Component } from "solid-js";
+import { createSignal } from "solid-js";
 
 const App: Component = () => {
+    const [username, setUsername] = createSignal("");
+    const isUsernameValid = () =>
+        /^[A-Za-z][A-Za-z0-9\-]{2,29}$/.test(username());
+
     return (
         <div class="hero bg-base-100 min-h-screen">
             <div class="hero-content text-center">
@@ -38,14 +43,19 @@ const App: Component = () => {
                             minlength="3"
                             maxlength="30"
                             title="Only letters, numbers or dash"
+                            onInput={(e) => setUsername(e.currentTarget.value)}
                         />
                     </label>
                     <div class="flex flex-row gap-4">
-                        <button class="btn btn-primary mt-4 flex-1">
+                        <button
+                            class="btn btn-primary mt-4 flex-1"
+                            disabled={!isUsernameValid()}
+                        >
                             Create a game
                         </button>
                         <button
                             class="btn btn-neutral mt-4 flex-1"
+                            disabled={!isUsernameValid()}
                             onclick={(e) => {
                                 e.preventDefault();
                                 const dialog = document.getElementById(
