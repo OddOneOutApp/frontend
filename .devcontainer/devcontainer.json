@@ -1,0 +1,23 @@
+{
+    "name": "OddOneOut Frontend",
+    "image": "mcr.microsoft.com/devcontainers/typescript-node",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "enkia.tokyo-night",
+                "esbenp.prettier-vscode",
+                "wakatime.vscode-wakatime",
+                "bradlc.vscode-tailwindcss",
+                "solidjs-community.solid-snippets"
+            ],
+            "settings": {
+                "workbench.colorTheme": "Tokyo Night",
+                "editor.formatOnSave": true,
+                "editor.defaultFormatter": "esbenp.prettier-vscode"
+            }
+        }
+    }
+}
