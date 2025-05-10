@@ -9,6 +9,13 @@ export default defineConfig({
         allowedHosts: [
             "3000--main--oddoneout-frontend--greenman999.coder.greenman999.de",
         ],
+        proxy: {
+            "/api": {
+                target: "https://8080--main--oddoneout-backend--greenman999.coder.greenman999.de",
+                changeOrigin: true,
+                secure: true,
+            },
+        },
     },
     build: {
         target: "esnext",
