@@ -1,21 +1,24 @@
 {
-  "name": "vite-template-solid",
-  "version": "0.0.0",
-  "description": "",
-  "type": "module",
-  "scripts": {
-    "start": "vite",
-    "dev": "vite",
-    "build": "vite build",
-    "serve": "vite preview"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "typescript": "^5.7.2",
-    "vite": "^6.0.0",
-    "vite-plugin-solid": "^2.11.6"
-  },
-  "dependencies": {
-    "solid-js": "^1.9.5"
-  }
+    "name": "oddoneout-frontend",
+    "version": "0.0.0",
+    "description": "",
+    "type": "module",
+    "scripts": {
+        "start": "vite",
+        "dev": "vite --host 127.0.0.1",
+        "build": "vite build",
+        "serve": "vite preview"
+    },
+    "license": "GPL-3.0-only",
+    "devDependencies": {
+        "daisyui": "^5.0.35",
+        "typescript": "^5.7.2",
+        "vite": "^6.0.0",
+        "vite-plugin-solid": "^2.11.6"
+    },
+    "dependencies": {
+        "@tailwindcss/vite": "^4.1.6",
+        "solid-js": "^1.9.5",
+        "tailwindcss": "^4.1.6"
+    }
 }
