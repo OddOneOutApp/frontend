@@ -9,7 +9,6 @@
         "build": "vite build",
         "serve": "vite preview"
     },
-    "packageManager": "npm@latest",
     "license": "GPL-3.0-only",
     "devDependencies": {
         "daisyui": "^5.0.35",
