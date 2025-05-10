@@ -1,10 +1,56 @@
 import type { Component } from "solid-js";
 import { createSignal } from "solid-js";
+import { DOMElement } from "solid-js/jsx-runtime";
 
 const App: Component = () => {
     const [username, setUsername] = createSignal("");
     const isUsernameValid = () =>
         /^[A-Za-z][A-Za-z0-9\-]{2,29}$/.test(username());
+
+    const createGame = async (
+        e: MouseEvent & {
+            currentTarget: HTMLButtonElement;
+            target: DOMElement;
+        }
+    ) => {
+        const response = await fetch("/api/games", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username: username() }),
+        });
+        if (response.ok) {
+            const data = await response.json();
+            const gameId = data.game_id;
+
+            const gameUrl = new URL(window.location.href);
+            gameUrl.pathname = `/game/${gameId}`;
+        }
+    };
+
+    const joinGame = async (
+        e: MouseEvent & {
+            currentTarget: HTMLButtonElement;
+            target: DOMElement;
+        }
+    ) => {
+        const gameId = (
+            document.getElementById("game_id_input") as HTMLInputElement
+        ).value;
+        const response = await fetch(`/api/games/${gameId}/join`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username: username() }),
+        });
+        if (response.ok) {
+            const data = await response.json();
+            const gameUrl = new URL(window.location.href);
+            gameUrl.pathname = `/game/${data.game_id}`;
+        }
+    };
 
     return (
         <div class="hero bg-base-100 min-h-screen">
@@ -50,6 +96,7 @@ const App: Component = () => {
                         <button
                             class="btn btn-primary mt-4 flex-1"
                             disabled={!isUsernameValid()}
+                            onclick={createGame}
                         >
                             Create a game
                         </button>
@@ -95,6 +142,7 @@ const App: Component = () => {
                                 <input
                                     type="text"
                                     class="grow"
+                                    id="game_id_input"
                                     placeholder="Game ID"
                                     required
                                     pattern="[a-zA-Z0-9]*"
@@ -103,7 +151,10 @@ const App: Component = () => {
                                     title="Only letters and numbers"
                                 />
                             </label>
-                            <button class="btn btn-primary join-item">
+                            <button
+                                class="btn btn-primary join-item"
+                                onclick={joinGame}
+                            >
                                 Join
                             </button>
                         </div>
