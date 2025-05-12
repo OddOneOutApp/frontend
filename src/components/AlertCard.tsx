@@ -5,7 +5,17 @@ const AlertCard: VoidComponent<{ alert: AlertCard }> = (props) => {
     return (
         <>
             <div
-                class={`alert alert-${props.alert.type} flex cursor-pointer`}
+                class={`alert ${
+                    props.alert.type === "success"
+                        ? "alert-success"
+                        : props.alert.type === "info"
+                        ? "alert-info"
+                        : props.alert.type === "error"
+                        ? "alert-error"
+                        : props.alert.type === "warning"
+                        ? "alert-warning"
+                        : ""
+                } flex cursor-pointer`}
                 onClick={(e) => AlertManager.removeAlert(props.alert.id)}
             >
                 <Switch>
