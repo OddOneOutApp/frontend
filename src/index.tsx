@@ -2,8 +2,10 @@
 import { render } from "solid-js/web";
 
 import "./index.css";
-import App from "./App.tsx";
+import App from "./pages/App.tsx";
 import { Route, Router } from "@solidjs/router";
+import RootLayout from "./layouts/RootLayout.tsx";
+import AppLayout from "./layouts/AppLayout.tsx";
 
 const root = document.getElementById("root");
 
@@ -15,8 +17,10 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 
 render(
     () => (
-        <Router>
-            <Route path="/" component={App} />
+        <Router root={RootLayout}>
+            <Route path="/" component={AppLayout}>
+                <Route path="/" component={App} />
+            </Route>
         </Router>
     ),
     root!
