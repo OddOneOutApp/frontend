@@ -18,7 +18,7 @@ const RootLayout: Component<RouteSectionProps<unknown>> = (props) => {
                         {props.children}
                     </Suspense>
                 </div>
-                <div class="toast toast-end z-50 mb-16">
+                <div class="toast toast-end z-50">
                     <For each={alertManager.getAlerts()}>
                         {(alert) => <AlertCard alert={alert} />}
                     </For>
