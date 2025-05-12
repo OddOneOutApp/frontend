@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 import tailwindcss from "@tailwindcss/vite";
+import path from "path";
 
 export default defineConfig({
     plugins: [tailwindcss(), solidPlugin()],
@@ -19,5 +20,14 @@ export default defineConfig({
     },
     build: {
         target: "esnext",
+    },
+    resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "./src"),
+            "@components": path.resolve(__dirname, "./src/components"),
+            "@pages": path.resolve(__dirname, "src/pages"),
+            "@util": path.resolve(__dirname, "src/util"),
+            "@api": path.resolve(__dirname, "src/api"),
+        },
     },
 });

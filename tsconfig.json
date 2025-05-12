@@ -1,5 +1,7 @@
 {
+    "include": ["src/**/*"],
     "compilerOptions": {
+        "baseUrl": ".",
         "strict": true,
         "target": "ESNext",
         "module": "NodeNext",
@@ -11,6 +13,13 @@
         "types": ["vite/client"],
         "noEmit": true,
         "isolatedModules": true,
-        "allowImportingTsExtensions": true
+        "allowImportingTsExtensions": true,
+        "paths": {
+            "@/*": ["src/*"],
+            "@components/*": ["src/components/*"],
+            "@pages/*": ["src/pages/*"],
+            "@util/*": ["src/util/*"],
+            "@api/*": ["src/api/*"]
+        }
     }
 }
