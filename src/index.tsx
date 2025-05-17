@@ -6,6 +6,7 @@ import App from "./pages/App.tsx";
 import { Route, Router } from "@solidjs/router";
 import RootLayout from "./layouts/RootLayout.tsx";
 import AppLayout from "./layouts/AppLayout.tsx";
+import Game from "./pages/Game.tsx";
 
 const root = document.getElementById("root");
 
@@ -20,6 +21,7 @@ render(
         <Router root={RootLayout}>
             <Route path="/" component={AppLayout}>
                 <Route path="/" component={App} />
+                <Route path="/game/:gameID" component={Game} />
             </Route>
         </Router>
     ),

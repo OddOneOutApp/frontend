@@ -15,6 +15,7 @@ export default defineConfig({
                 target: "https://8080--main--oddoneout-backend--greenman999.coder.greenman999.de",
                 changeOrigin: true,
                 secure: true,
+                ws: true,
             },
         },
     },
