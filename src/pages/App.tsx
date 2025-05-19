@@ -187,7 +187,7 @@ const App: Component = () => {
                                 onclick={async (e) => {
                                     await joinGame(gameId(), username());
                                 }}
-                                disabled={!(gameId() == "")}
+                                disabled={gameId() == ""}
                             >
                                 Join
                             </button>
