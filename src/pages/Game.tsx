@@ -85,29 +85,25 @@ const Game: Component<RouteSectionProps> = (props) => {
             <p>Connection: {states[state()]}</p>
             <div class="flex flex-col gap-4">
                 <For each={users} fallback={<p>Loading...</p>}>
-                    {(user, i) => (
+                    {(user) => (
                         <div class="card w-md bg-base-200 card-md shadow-sm items-center">
                             <div class="card-body">
                                 <div class="flex flex-row gap-2 items-center">
                                     <div
                                         class={`avatar ${
-                                            users[i()].online
+                                            user.online
                                                 ? "avatar-online"
                                                 : "avatar-offline"
                                         }`}
                                     >
                                         <div class="w-12 rounded-full">
                                             <img
-                                                src={`https://api.dicebear.com/9.x/fun-emoji/svg?seed=${
-                                                    users[i()].id
-                                                }`}
+                                                src={`https://api.dicebear.com/9.x/fun-emoji/svg?seed=${user.id}`}
                                             />
                                         </div>
                                     </div>
-                                    <h2 class="card-title">
-                                        {users[i()].name}
-                                    </h2>
-                                    <p>{users[i()].id}</p>
+                                    <h2 class="card-title">{user.name}</h2>
+                                    <p>{user.id}</p>
                                 </div>
                             </div>
                         </div>
