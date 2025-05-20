@@ -3,39 +3,133 @@ import {
     createWSState,
 } from "@solid-primitives/websocket";
 import { useParams, RouteSectionProps } from "@solidjs/router";
-import { createEffect, on, Component, For } from "solid-js";
+import { createEffect, on, Component, For, createSignal } from "solid-js";
 import { createStore } from "solid-js/store";
 
+type User = {
+    id: string;
+    name: string;
+    answer: string;
+    online: boolean;
+    vote: string;
+};
+
+const parseMessage = (msg: string) => {
+    const data = JSON.parse(msg);
+    data.user_id = parseUUID(data.user_id);
+    return data;
+};
+
+const parseUUID = (uuid: any) => {
+    if (Array.isArray(uuid)) {
+        return uuid
+            .map((num: number) => num.toString(16).padStart(2, "0"))
+            .join("")
+            .replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5");
+    }
+    return "00000000-0000-0000-0000-000000000000";
+};
+
+enum MessageType {
+    Join = "join",
+    Leave = "leave",
+    GameDelete = "game_delete",
+    UserStatus = "user_status",
+    Init = "init",
+    UpdateUser = "update_user",
+    Start = "start", // sent by client
+    Question = "question",
+    Answer = "answer", // sent by client
+    Answers = "answers",
+    Vote = "vote", // sent by client
+    VoteResult = "vote_result",
+}
+
+enum GameState {
+    Lobby = "lobby",
+    Answering = "answering",
+    Voting = "voting",
+    Finished = "finished",
+    Deleted = "deleted",
+}
+
 const Game: Component<RouteSectionProps> = (props) => {
-    const [users, setUsers] = createStore<User[]>([]);
-
-    type User = {
-        id: string;
-        name: string;
-        answer: string;
-        online: boolean;
-    };
-
-    const parseMessage = (msg: string) => {
-        const data = JSON.parse(msg);
-        data.user_id = parseUUID(data.user_id);
-        return data;
-    };
-
-    const parseUUID = (uuid: any) => {
-        if (Array.isArray(uuid)) {
-            return uuid
-                .map((num: number) => num.toString(16).padStart(2, "0"))
-                .join("")
-                .replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5");
-        }
-        return "00000000-0000-0000-0000-000000000000";
-    };
-
     const params = useParams();
+    const gameID = params.gameID;
+
+    const [users, setUsers] = createStore<User[]>([]);
+    const [question, setQuestion] = createSignal("");
+    const [actualQuestion, setActualQuestion] = createSignal("");
+    const [answers, setAnswers] = createStore<Record<string, string>>({});
+    const [gameState, setGameState] = createSignal<GameState>(GameState.Lobby);
+
+    const handlers: Record<string, (data: any) => void> = {
+        [MessageType.Join]: (data) => {
+            if (users.some((user) => user.id === data.user_id)) return;
+            setUsers(users.length, {
+                id: data.user_id,
+                name: data.content,
+                answer: "",
+                online: true,
+                vote: "",
+            });
+        },
+        [MessageType.Leave]: (data) => {
+            setUsers((users) => users.filter((u) => u.id !== data.user_id));
+        },
+        [MessageType.GameDelete]: (data) => {
+            setGameState(GameState.Deleted);
+            setUsers([]);
+            setQuestion("");
+            setAnswers({});
+            setActualQuestion("");
+        },
+        [MessageType.UserStatus]: (data) => {
+            setUsers(
+                (user) => user.id === data.user_id,
+                "online",
+                data.content
+            );
+        },
+        [MessageType.Init]: (data) => {
+            setUsers(
+                data.content.map((u: any) => ({
+                    id: parseUUID(u.id),
+                    name: u.name,
+                    answer: u.answer,
+                    online: u.active,
+                }))
+            );
+        },
+        [MessageType.UpdateUser]: (data) => {
+            setUsers(
+                (user) => user.id === data.user_id,
+                "name",
+                data.content.name
+            );
+        },
+        [MessageType.Question]: (data) => {
+            setQuestion(data.content);
+            setGameState(GameState.Answering);
+        },
+        [MessageType.Answers]: (data) => {
+            setAnswers(data.content.answers);
+            setActualQuestion(data.content.actual_question);
+            setGameState(GameState.Voting);
+        },
+        [MessageType.VoteResult]: (data) => {
+            setGameState(GameState.Finished);
+            setUsers((users) =>
+                users.map((user) => {
+                    const votedFor = data.content[user.id];
+                    return { ...user, vote: votedFor || "" };
+                })
+            );
+        },
+    };
 
     const ws = createReconnectingWS(
-        `https://3000--main--oddoneout-frontend--greenman999.coder.greenman999.de/api/games/${params.gameID}`
+        `https://3000--main--oddoneout-frontend--greenman999.coder.greenman999.de/api/games/${gameID}`
     );
     const state = createWSState(ws);
     const states = ["Connecting", "Connected", "Disconnecting", "Disconnected"];
@@ -43,46 +137,79 @@ const Game: Component<RouteSectionProps> = (props) => {
     ws.addEventListener("message", (msg) => {
         const data = parseMessage(msg.data);
 
-        if (data.type === "join") {
-            if (users.some((user) => user.id === data.user_id)) return;
-            setUsers((users) => [
-                ...users,
-                {
-                    id: data.user_id,
-                    name: data.content,
-                    answer: "",
-                    online: true,
-                },
-            ]);
-        } else if (data.type === "init") {
-            setUsers((users) => {
-                let newUsers = [];
-                for (let i = 0; i < data.content.length; i++) {
-                    newUsers.push({
-                        id: parseUUID(data.content[i].id),
-                        name: data.content[i].name,
-                        answer: data.content[i].answer,
-                        online: data.content[i].active,
-                    });
-                }
-                return newUsers;
-            });
-        } else if (data.type === "leave") {
-            setUsers((users) =>
-                users.filter((user) => user.id !== data.user_id)
-            );
-        } else if (data.type === "user_status") {
-            setUsers(
-                (user, i) => user.id === data.user_id,
-                "online",
-                data.content
-            );
-        }
+        handlers[data.type]?.(data);
     });
 
     return (
         <>
-            <p>Connection: {states[state()]}</p>
+            <h1 class="text-2xl font-bold">Game ID: {gameID}</h1>
+            <h2 class="text-xl font-bold">Game State: {gameState()}</h2>
+            <h2 class="text-xl font-bold">Question: {question()}</h2>
+            <h2 class="text-xl font-bold">
+                Actual Question: {actualQuestion()}
+            </h2>
+            <AnswerInput
+                ws={ws}
+                enabled={gameState() === GameState.Answering}
+            />
+            <h2 class="text-xl font-bold">Answers:</h2>
+            <div class="flex flex-col gap-4">
+                <For
+                    each={Object.entries(answers)}
+                    fallback={<p>Loading...</p>}
+                >
+                    {([userID, answer]) => (
+                        <div class="card w-md bg-base-200 card-md shadow-sm items-center">
+                            <div class="card-body">
+                                <h2
+                                    class="card-title
+                                    text-lg font-bold"
+                                >
+                                    {userID}
+                                </h2>
+                                <p>{answer}</p>
+                            </div>
+                        </div>
+                    )}
+                </For>
+            </div>
+            <h2 class="text-xl font-bold">Users:</h2>
+            <div class="flex flex-col gap-4">
+                <For each={users} fallback={<p>Loading...</p>}>
+                    {(user) => (
+                        <div class="card w-md bg-base-200 card-md shadow-sm items-center">
+                            <div class="card-body">
+                                <div class="flex flex-row gap-2 items-center">
+                                    <div
+                                        class={`avatar ${
+                                            user.online
+                                                ? "avatar-online"
+                                                : "avatar-offline"
+                                        }`}
+                                    >
+                                        <div class="w-12 rounded-full">
+                                            <img
+                                                src={`https://api.dicebear.com/9.x/fun-emoji/svg?seed=${user.id}`}
+                                            />
+                                        </div>
+                                    </div>
+                                    <h2
+                                        class="card-title
+                                        text-lg font-bold"
+                                    >
+                                        {user.name}
+                                    </h2>
+                                    <p>{user.id}</p>
+                                    <p>{user.answer}</p>
+                                    <p>{user.vote}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </For>
+            </div>
+
+            {/* <p>Connection: {states[state()]}</p>
             <div class="flex flex-col gap-4">
                 <For each={users} fallback={<p>Loading...</p>}>
                     {(user) => (
@@ -109,8 +236,43 @@ const Game: Component<RouteSectionProps> = (props) => {
                         </div>
                     )}
                 </For>
-            </div>
+            </div> */}
         </>
+    );
+};
+
+const AnswerInput: Component<{ ws: WebSocket; enabled: boolean }> = (props) => {
+    const [answer, setAnswer] = createSignal("");
+    const submitAnswer = (e: Event) => {
+        e.preventDefault();
+        if (!props.enabled) return;
+        props.ws.send(
+            JSON.stringify({
+                type: "answer",
+                content: answer(),
+            })
+        );
+        setAnswer("");
+    };
+    return (
+        <form onSubmit={submitAnswer} class="flex flex-row gap-2 my-4">
+            <input
+                class="input input-bordered flex-1"
+                type="text"
+                value={answer()}
+                onInput={(e) => setAnswer(e.currentTarget.value)}
+                placeholder="Your answer..."
+                required
+                disabled={!props.enabled}
+            />
+            <button
+                class="btn btn-primary"
+                type="submit"
+                disabled={!props.enabled}
+            >
+                Submit
+            </button>
+        </form>
     );
 };
 
