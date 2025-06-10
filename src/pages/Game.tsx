@@ -26,6 +26,7 @@ type User = {
     answer: string;
     online: boolean;
     vote: string;
+    host: boolean;
 };
 
 const parseMessage = (msg: string) => {
@@ -113,6 +114,7 @@ const Game: Component<RouteSectionProps> = (props) => {
                 answer: "",
                 online: true,
                 vote: "",
+                host: data.host || false,
             });
         },
         [MessageType.Leave]: (data) => {
@@ -139,6 +141,7 @@ const Game: Component<RouteSectionProps> = (props) => {
                     name: u.name,
                     answer: u.answer,
                     online: u.active,
+                    host: u.host || false,
                 }))
             );
             setGameState(data.content.game_state);
@@ -313,9 +316,9 @@ const Game: Component<RouteSectionProps> = (props) => {
                                         </div>
                                     </div>
                                     <div class="flex flex-col gap-2">
-                                        <span class="text-lg">{user.name}</span>
-                                        <span class="">
-                                            Waiting for answer...
+                                        <span class="text-lg">
+                                            {user.name}
+                                            {user.host ? " (Host)" : ""}
                                         </span>
                                     </div>
                                 </div>
