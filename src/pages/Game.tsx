@@ -90,7 +90,6 @@ const Game: Component<RouteSectionProps> = (props) => {
     );
     const [votingEndTime, setVotingEndTime] = createSignal<number | null>(null);
     const [actualQuestion, setActualQuestion] = createSignal("");
-    const [answers, setAnswers] = createStore<Record<string, string>>({});
     const [gameState, setGameState] = createSignal<GameState>(GameState.Lobby);
 
     const [now, setNow] = createSignal(Math.floor(Date.now() / 1000));
@@ -124,7 +123,6 @@ const Game: Component<RouteSectionProps> = (props) => {
             setGameState(GameState.Deleted);
             setUsers([]);
             setQuestion("");
-            setAnswers({});
             setActualQuestion("");
         },
         [MessageType.UserStatus]: (data) => {
@@ -139,7 +137,6 @@ const Game: Component<RouteSectionProps> = (props) => {
                 data.content.users.map((u: any) => ({
                     id: parseUUID(u.id),
                     name: u.name,
-                    answer: u.answer,
                     online: u.active,
                     host: u.host || false,
                 }))
@@ -149,14 +146,13 @@ const Game: Component<RouteSectionProps> = (props) => {
             setAnswersEndTime(data.content.answers_end_time);
             setVotingEndTime(data.content.voting_end_time);
             setActualQuestion(data.content.actual_question);
-            setAnswers(
-                Object.fromEntries(
-                    data.content.answers.map((a: any) => [
-                        parseUUID(a.user_id),
-                        a.answer,
-                    ])
-                )
-            );
+            data.content.answers.forEach((a: any) => {
+                setUsers(
+                    (user) => user.id === parseUUID(a.user_id),
+                    "answer",
+                    a.answer
+                );
+            });
         },
         [MessageType.UpdateUser]: (data) => {
             setUsers(
@@ -171,14 +167,13 @@ const Game: Component<RouteSectionProps> = (props) => {
             setGameState(GameState.Answering);
         },
         [MessageType.Answers]: (data) => {
-            setAnswers(
-                Object.fromEntries(
-                    data.content.answers.map((a: any) => [
-                        parseUUID(a.user_id),
-                        a.answer,
-                    ])
-                )
-            );
+            data.content.answers.forEach((a: any) => {
+                setUsers(
+                    (user) => user.id === parseUUID(a.user_id),
+                    "answer",
+                    a.answer
+                );
+            });
             setActualQuestion(data.content.actual_question);
             setGameState(GameState.Voting);
             setVotingEndTime(data.content.voting_end_time);
@@ -320,7 +315,22 @@ const Game: Component<RouteSectionProps> = (props) => {
                                             {user.name}
                                             {user.host ? " (Host)" : ""}
                                         </span>
+                                        <Show
+                                            when={
+                                                gameState() ===
+                                                    GameState.Answering ||
+                                                gameState() ===
+                                                    GameState.Voting ||
+                                                gameState() ===
+                                                    GameState.Finished
+                                            }
+                                        >
+                                            <span class="text-sm text-gray-500">
+                                                {user.answer || "No answer yet"}
+                                            </span>
+                                        </Show>
                                     </div>
+                                    <div class=""></div>
                                 </div>
                             </div>
                         )}
