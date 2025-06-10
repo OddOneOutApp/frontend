@@ -1,3 +1,4 @@
+import { FontAwesomeIcon } from "@/components/FontAwesomeIcon.tsx";
 import {
     createReconnectingWS,
     createWSState,
@@ -13,6 +14,11 @@ import {
     onCleanup,
 } from "solid-js";
 import { createStore } from "solid-js/store";
+import {
+    faLink,
+    faUserGroup,
+    faUsers,
+} from "@fortawesome/free-solid-svg-icons";
 
 type User = {
     id: string;
@@ -197,88 +203,102 @@ const Game: Component<RouteSectionProps> = (props) => {
         handlers[data.type]?.(data);
     });
 
+    const [linkCopied, setLinkCopied] = createSignal(false);
+
+    const remainingTime = () => {
+        if (gameState() === GameState.Answering && answersEndTime() !== null) {
+            return Math.max(0, answersEndTime()! - now());
+        } else if (
+            gameState() === GameState.Voting &&
+            votingEndTime() !== null
+        ) {
+            return Math.max(0, votingEndTime()! - now());
+        }
+        return 0;
+    };
+
+    const maxTime = () => {
+        if (gameState() === GameState.Answering && answersEndTime() !== null) {
+            return 60;
+        } else if (
+            gameState() === GameState.Voting &&
+            votingEndTime() !== null
+        ) {
+            return 30;
+        }
+        return 60; // Default max time if not in answering or voting state
+    };
+
     return (
         <>
-            <p class="text-sm">
-                Connection: {states[state()]} ({ws.readyState})
-            </p>
-            <h1 class="text-2xl font-bold">Game ID: {gameID}</h1>
-            <button
-                class="btn btn-primary"
-                onclick={() =>
-                    ws.send(JSON.stringify({ type: "start", content: 60 }))
-                }
-            >
-                Start Game
-            </button>
-            <h2 class="text-xl font-bold">Game State: {gameState()}</h2>
-            <h2 class="text-xl font-bold">
-                Answers End Time:{" "}
-                {answersEndTime() !== null && answersEndTime() != 0
-                    ? answersEndTime()! - now()
-                    : "N/A"}
-            </h2>
-            <h2 class="text-xl font-bold">
-                Voting End Time:{" "}
-                {votingEndTime() !== null && votingEndTime() != 0
-                    ? votingEndTime()! - now()
-                    : "N/A"}
-            </h2>
-            <h2 class="text-xl font-bold">Question: {question()}</h2>
-            <h2 class="text-xl font-bold">
-                Actual Question: {actualQuestion()}
-            </h2>
+            <div class="flex flex-row justify-between items-center pt-4">
+                <h1 class="text-4xl font-bold">OddOneOut</h1>
+                <div class="flex flex-row items-center gap-4">
+                    <span class="text-lg font-semibold">ID: {gameID}</span>
+                    <button
+                        class="btn btn-secondary"
+                        onClick={() => {
+                            const link = `${window.location.origin}/join/${gameID}`;
+                            navigator.clipboard.writeText(link).then(() => {
+                                setLinkCopied(true);
+                                setTimeout(() => {
+                                    setLinkCopied(false);
+                                }, 1000);
+                            });
+                        }}
+                    >
+                        <FontAwesomeIcon
+                            icon={faLink}
+                            title="Copy Invite Link"
+                        />
+                        {linkCopied() ? "Copied!" : "Invite"}
+                    </button>
+                </div>
+            </div>
+            <div class="flex flex-row items-center gap-4 mt-2">
+                <span class="text-xl whitespace-nowrap">
+                    {
+                        {
+                            [GameState.Lobby]: "Lobby",
+                            [GameState.Answering]: "Answering",
+                            [GameState.Voting]: "Voting",
+                            [GameState.Finished]: "Finished",
+                            [GameState.Deleted]: "Deleted",
+                        }[gameState()]
+                    }
+                </span>
+                <progress
+                    class="progress progress-accent h-4"
+                    value={remainingTime()}
+                    max={maxTime()}
+                ></progress>
+                <span class="font-normal text-xl">{remainingTime()}s</span>
+            </div>
+            <h2 class="text-2xl font-semibold mt-4">{question()}</h2>
             <AnswerInput
                 ws={ws}
-                enabled={gameState() === GameState.Answering}
+                enabled={
+                    gameState() === GameState.Answering &&
+                    answersEndTime() !== null &&
+                    now() < answersEndTime()!
+                }
             />
-            <h2 class="text-xl font-bold">Answers:</h2>
-            <div class="flex flex-col gap-4">
-                <For
-                    each={Object.entries(answers)}
-                    fallback={<p>Loading...</p>}
-                >
-                    {([userID, answer]) => (
-                        <div class="card w-md bg-base-200 card-md shadow-sm items-center">
-                            <div class="card-body">
-                                <h2
-                                    class="card-title
-                                    text-lg font-bold"
-                                >
-                                    {userID}
-                                </h2>
-                                <p>{answer}</p>
-                                <button
-                                    class="btn btn-primary"
-                                    onclick={() =>
-                                        ws.send(
-                                            JSON.stringify({
-                                                type: "vote",
-                                                content: uuidToArray(userID),
-                                            })
-                                        )
-                                    }
-                                    disabled={gameState() !== GameState.Voting}
-                                >
-                                    Vote for this answer
-                                </button>
-                                <p>
-                                    {JSON.stringify({
-                                        content: uuidToArray(userID),
-                                    })}
-                                </p>
-                            </div>
+            <div class="mt-4 bg-base-200 card">
+                <div class="card-body">
+                    <div class="flex flex-row justify-between items-center">
+                        <h3 class="text-xl font-semibold">Players</h3>
+                        <div class="flex flex-row items-center gap-2">
+                            <FontAwesomeIcon
+                                icon={faUsers}
+                                title="Player count"
+                            ></FontAwesomeIcon>
+                            {users.length} / 10
                         </div>
-                    )}
-                </For>
-            </div>
-            <h2 class="text-xl font-bold">Users:</h2>
-            <div class="flex flex-col gap-4">
-                <For each={users} fallback={<p>Loading...</p>}>
-                    {(user) => (
-                        <div class="card w-md bg-base-200 card-md shadow-sm items-center">
-                            <div class="card-body">
-                                <div class="flex flex-row gap-2 items-center">
+                    </div>
+                    <For each={users}>
+                        {(user) => (
+                            <div class="card bg-base-300">
+                                <div class="p-4 flex flex-row items-center gap-4">
                                     <div
                                         class={`avatar ${
                                             user.online
@@ -286,56 +306,24 @@ const Game: Component<RouteSectionProps> = (props) => {
                                                 : "avatar-offline"
                                         }`}
                                     >
-                                        <div class="w-12 rounded-full">
+                                        <div class="w-12 rounded-xl">
                                             <img
                                                 src={`https://api.dicebear.com/9.x/fun-emoji/svg?seed=${user.id}`}
                                             />
                                         </div>
                                     </div>
-                                    <h2
-                                        class="card-title
-                                        text-lg font-bold"
-                                    >
-                                        {user.name}
-                                    </h2>
-                                    <p>{user.id}</p>
-                                    <p>{user.answer}</p>
-                                    <p>{user.vote}</p>
+                                    <div class="flex flex-col gap-2">
+                                        <span class="text-lg">{user.name}</span>
+                                        <span class="">
+                                            Waiting for answer...
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </For>
+                        )}
+                    </For>
+                </div>
             </div>
-
-            {/* <p>Connection: {states[state()]}</p>
-            <div class="flex flex-col gap-4">
-                <For each={users} fallback={<p>Loading...</p>}>
-                    {(user) => (
-                        <div class="card w-md bg-base-200 card-md shadow-sm items-center">
-                            <div class="card-body">
-                                <div class="flex flex-row gap-2 items-center">
-                                    <div
-                                        class={`avatar ${
-                                            user.online
-                                                ? "avatar-online"
-                                                : "avatar-offline"
-                                        }`}
-                                    >
-                                        <div class="w-12 rounded-full">
-                                            <img
-                                                src={`https://api.dicebear.com/9.x/fun-emoji/svg?seed=${user.id}`}
-                                            />
-                                        </div>
-                                    </div>
-                                    <h2 class="card-title">{user.name}</h2>
-                                    <p>{user.id}</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </For>
-            </div> */}
         </>
     );
 };
@@ -369,7 +357,7 @@ const AnswerInput: Component<{ ws: WebSocket; enabled: boolean }> = (props) => {
                 type="submit"
                 disabled={!props.enabled}
             >
-                Submit
+                Submit Answer
             </button>
         </form>
     );
