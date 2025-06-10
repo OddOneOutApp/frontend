@@ -140,6 +140,7 @@ const Game: Component<RouteSectionProps> = (props) => {
                     name: u.name,
                     online: u.active,
                     host: u.host || false,
+                    vote: parseUUID(u.vote),
                 }))
             );
             setGameState(data.content.game_state);
@@ -383,7 +384,27 @@ const Game: Component<RouteSectionProps> = (props) => {
                                             </span>
                                         </Show>
                                     </div>
-                                    <div class=""></div>
+                                    <div class="flex flex-row gap-1 ml-auto">
+                                        <For
+                                            each={users.filter(
+                                                (u) => u.vote === user.id
+                                            )}
+                                        >
+                                            {(voter) => (
+                                                <div
+                                                    class="avatar tooltip"
+                                                    data-tip={voter.name}
+                                                >
+                                                    <div class="w-10 rounded-full border-2 border-primary">
+                                                        <img
+                                                            src={`https://api.dicebear.com/9.x/fun-emoji/svg?seed=${voter.id}`}
+                                                            alt={voter.name}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </For>
+                                    </div>
                                 </div>
                             </div>
                         )}
