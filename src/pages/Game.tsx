@@ -388,6 +388,39 @@ const Game: Component<RouteSectionProps> = (props) => {
                             </div>
                         )}
                     </For>
+                    <Show when={gameState() === GameState.Voting}>
+                        <button
+                            class="btn btn-primary"
+                            disabled={gameState() !== GameState.Voting}
+                            onClick={() => {
+                                if (votedUser() === null) return;
+                                ws.send(
+                                    JSON.stringify({
+                                        type: "vote",
+                                        content: uuidToArray(votedUser()!),
+                                    })
+                                );
+                            }}
+                        >
+                            Submit Vote
+                        </button>
+                    </Show>
+                    <Show when={gameState() === GameState.Lobby}>
+                        <button
+                            class="btn btn-primary"
+                            disabled={gameState() !== GameState.Lobby}
+                            onClick={() => {
+                                ws.send(
+                                    JSON.stringify({
+                                        type: "start",
+                                        content: 60,
+                                    })
+                                );
+                            }}
+                        >
+                            Start Game
+                        </button>
+                    </Show>
                 </div>
             </div>
         </>
