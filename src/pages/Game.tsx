@@ -30,6 +30,17 @@ const parseUUID = (uuid: any) => {
     return "00000000-0000-0000-0000-000000000000";
 };
 
+const uuidToArray = (uuid: string): number[] => {
+    // Remove dashes and split into pairs of hex digits
+    const hex = uuid.replace(/-/g, "");
+    if (hex.length !== 32) return [];
+    const arr: number[] = [];
+    for (let i = 0; i < 32; i += 2) {
+        arr.push(parseInt(hex.slice(i, i + 2), 16));
+    }
+    return arr;
+};
+
 enum MessageType {
     Join = "join",
     Leave = "leave",
