@@ -123,6 +123,8 @@ const App: Component = () => {
                                         username(),
                                         selectedCategory()
                                     );
+
+                                    document.location.href = `/game/${gameId}`;
                                 }}
                             >
                                 Create a game
@@ -186,6 +188,7 @@ const App: Component = () => {
                                 class="btn btn-primary join-item"
                                 onclick={async (e) => {
                                     await joinGame(gameId(), username());
+                                    document.location.href = `/game/${gameId()}`;
                                 }}
                                 disabled={gameId() == ""}
                             >
