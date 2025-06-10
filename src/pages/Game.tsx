@@ -293,8 +293,10 @@ const Game: Component<RouteSectionProps> = (props) => {
             />
             <div class="mt-4 bg-base-200 card">
                 <div class="card-body">
-                    <div class="flex flex-row justify-between items-center">
-                        <h3 class="text-xl font-semibold">Players</h3>
+                    <div class="flex flex-row justify-between items-center mb-2">
+                        <h3 class="text-xl font-semibold leading-none">
+                            Players
+                        </h3>
                         <div class="flex flex-row items-center gap-2">
                             <FontAwesomeIcon
                                 icon={faUsers}
