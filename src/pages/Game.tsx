@@ -3,7 +3,15 @@ import {
     createWSState,
 } from "@solid-primitives/websocket";
 import { useParams, RouteSectionProps } from "@solidjs/router";
-import { createEffect, on, Component, For, createSignal } from "solid-js";
+import {
+    createEffect,
+    on,
+    Component,
+    For,
+    createSignal,
+    onMount,
+    onCleanup,
+} from "solid-js";
 import { createStore } from "solid-js/store";
 
 type User = {
@@ -120,7 +128,7 @@ const Game: Component<RouteSectionProps> = (props) => {
         },
         [MessageType.Init]: (data) => {
             setUsers(
-                data.content.map((u: any) => ({
+                data.content.users.map((u: any) => ({
                     id: parseUUID(u.id),
                     name: u.name,
                     answer: u.answer,
