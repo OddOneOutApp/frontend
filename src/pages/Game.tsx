@@ -142,6 +142,9 @@ const Game: Component<RouteSectionProps> = (props) => {
 
     return (
         <>
+            <p class="text-sm">
+                Connection: {states[state()]} ({ws.readyState})
+            </p>
             <h1 class="text-2xl font-bold">Game ID: {gameID}</h1>
             <h2 class="text-xl font-bold">Game State: {gameState()}</h2>
             <h2 class="text-xl font-bold">Question: {question()}</h2>
