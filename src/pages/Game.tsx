@@ -274,7 +274,13 @@ const Game: Component<RouteSectionProps> = (props) => {
                     value={remainingTime()}
                     max={maxTime()}
                 ></progress>
-                <span class="font-normal text-xl">{remainingTime()}s</span>
+                        <span class="font-normal text-xl whitespace-nowrap">
+                            {gameState() === GameState.Lobby
+                                ? "Waiting for players..."
+                                : remainingTime() + "s"}
+                        </span>
+                    </div>
+                </div>
             </div>
             <h2 class="text-2xl font-semibold mt-4">{question()}</h2>
             <AnswerInput
