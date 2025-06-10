@@ -78,6 +78,18 @@ const Game: Component<RouteSectionProps> = (props) => {
     const [answers, setAnswers] = createStore<Record<string, string>>({});
     const [gameState, setGameState] = createSignal<GameState>(GameState.Lobby);
 
+    const [now, setNow] = createSignal(Math.floor(Date.now() / 1000));
+    let intervalId: number = 0;
+    onMount(() => {
+        intervalId = setInterval(
+            () => setNow(Math.floor(Date.now() / 1000)),
+            1000
+        );
+    });
+    onCleanup(() => {
+        clearInterval(intervalId);
+    });
+
     const handlers: Record<string, (data: any) => void> = {
         [MessageType.Join]: (data) => {
             if (users.some((user) => user.id === data.user_id)) return;
@@ -192,6 +204,18 @@ const Game: Component<RouteSectionProps> = (props) => {
                 Start Game
             </button>
             <h2 class="text-xl font-bold">Game State: {gameState()}</h2>
+            <h2 class="text-xl font-bold">
+                Answers End Time:{" "}
+                {answersEndTime() !== null && answersEndTime() != 0
+                    ? answersEndTime()! - now()
+                    : "N/A"}
+            </h2>
+            <h2 class="text-xl font-bold">
+                Voting End Time:{" "}
+                {votingEndTime() !== null && votingEndTime() != 0
+                    ? votingEndTime()! - now()
+                    : "N/A"}
+            </h2>
             <h2 class="text-xl font-bold">Question: {question()}</h2>
             <h2 class="text-xl font-bold">
                 Actual Question: {actualQuestion()}
