@@ -260,22 +260,22 @@ const Game: Component<RouteSectionProps> = (props) => {
             <div class="card bg-base-200 mt-4">
                 <div class="card-body">
                     <div class="flex flex-row items-center gap-4">
-                <span class="text-xl whitespace-nowrap">
-                    {
-                        {
-                            [GameState.Lobby]: "Lobby",
-                            [GameState.Answering]: "Answering",
-                            [GameState.Voting]: "Voting",
-                            [GameState.Finished]: "Finished",
-                            [GameState.Deleted]: "Deleted",
-                        }[gameState()]
-                    }
-                </span>
-                <progress
-                    class="progress progress-accent h-4"
-                    value={remainingTime()}
-                    max={maxTime()}
-                ></progress>
+                        <span class="text-xl whitespace-nowrap">
+                            {
+                                {
+                                    [GameState.Lobby]: "Lobby",
+                                    [GameState.Answering]: "Answering",
+                                    [GameState.Voting]: "Voting",
+                                    [GameState.Finished]: "Finished",
+                                    [GameState.Deleted]: "Deleted",
+                                }[gameState()]
+                            }
+                        </span>
+                        <progress
+                            class="progress progress-accent h-4"
+                            value={remainingTime()}
+                            max={maxTime()}
+                        ></progress>
                         <span class="font-normal text-xl whitespace-nowrap">
                             {gameState() === GameState.Lobby
                                 ? "Waiting for players..."
@@ -292,14 +292,14 @@ const Game: Component<RouteSectionProps> = (props) => {
                             limit.
                         </span>
                         <h2 class="text-2xl font-semibold">{question()}</h2>
-            <AnswerInput
-                ws={ws}
-                enabled={
-                    gameState() === GameState.Answering &&
-                    answersEndTime() !== null &&
-                    now() < answersEndTime()!
-                }
-            />
+                        <AnswerInput
+                            ws={ws}
+                            enabled={
+                                gameState() === GameState.Answering &&
+                                answersEndTime() !== null &&
+                                now() < answersEndTime()!
+                            }
+                        />
                     </div>
                 </div>
             </Show>
@@ -443,7 +443,9 @@ const AnswerInput: Component<{ ws: WebSocket; enabled: boolean }> = (props) => {
     return (
         <form onSubmit={submitAnswer} class="flex flex-row gap-2 my-4">
             <input
-                class="input input-bordered flex-1"
+                class={`input ${
+                    !props.enabled ? "!border-neutral !border" : ""
+                } flex-1`}
                 type="text"
                 value={answer()}
                 onInput={(e) => setAnswer(e.currentTarget.value)}
