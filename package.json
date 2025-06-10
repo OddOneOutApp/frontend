@@ -11,6 +11,8 @@
     },
     "license": "GPL-3.0-only",
     "devDependencies": {
+        "@fortawesome/fontawesome-svg-core": "^6.7.2",
+        "@fortawesome/free-solid-svg-icons": "^6.7.2",
         "@types/node": "^22.15.17",
         "daisyui": "^5.0.35",
         "typescript": "^5.7.2",
