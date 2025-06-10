@@ -59,6 +59,7 @@ const Game: Component<RouteSectionProps> = (props) => {
 
     const [users, setUsers] = createStore<User[]>([]);
     const [question, setQuestion] = createSignal("");
+    const [endTime, setEndTime] = createSignal<number | null>(null);
     const [actualQuestion, setActualQuestion] = createSignal("");
     const [answers, setAnswers] = createStore<Record<string, string>>({});
     const [gameState, setGameState] = createSignal<GameState>(GameState.Lobby);
@@ -109,7 +110,8 @@ const Game: Component<RouteSectionProps> = (props) => {
             );
         },
         [MessageType.Question]: (data) => {
-            setQuestion(data.content);
+            setQuestion(data.content.question);
+            setEndTime(data.content.game_end_time);
             setGameState(GameState.Answering);
         },
         [MessageType.Answers]: (data) => {
