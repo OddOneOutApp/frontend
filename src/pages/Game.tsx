@@ -70,7 +70,10 @@ const Game: Component<RouteSectionProps> = (props) => {
 
     const [users, setUsers] = createStore<User[]>([]);
     const [question, setQuestion] = createSignal("");
-    const [endTime, setEndTime] = createSignal<number | null>(null);
+    const [answersEndTime, setAnswersEndTime] = createSignal<number | null>(
+        null
+    );
+    const [votingEndTime, setVotingEndTime] = createSignal<number | null>(null);
     const [actualQuestion, setActualQuestion] = createSignal("");
     const [answers, setAnswers] = createStore<Record<string, string>>({});
     const [gameState, setGameState] = createSignal<GameState>(GameState.Lobby);
@@ -112,6 +115,19 @@ const Game: Component<RouteSectionProps> = (props) => {
                     online: u.active,
                 }))
             );
+            setGameState(data.content.game_state);
+            setQuestion(data.content.question);
+            setAnswersEndTime(data.content.answers_end_time);
+            setVotingEndTime(data.content.voting_end_time);
+            setActualQuestion(data.content.actual_question);
+            setAnswers(
+                Object.fromEntries(
+                    data.content.answers.map((a: any) => [
+                        parseUUID(a.user_id),
+                        a.answer,
+                    ])
+                )
+            );
         },
         [MessageType.UpdateUser]: (data) => {
             setUsers(
@@ -122,13 +138,21 @@ const Game: Component<RouteSectionProps> = (props) => {
         },
         [MessageType.Question]: (data) => {
             setQuestion(data.content.question);
-            setEndTime(data.content.game_end_time);
+            setAnswersEndTime(data.content.answers_end_time);
             setGameState(GameState.Answering);
         },
         [MessageType.Answers]: (data) => {
-            setAnswers(data.content.answers);
+            setAnswers(
+                Object.fromEntries(
+                    data.content.answers.map((a: any) => [
+                        parseUUID(a.user_id),
+                        a.answer,
+                    ])
+                )
+            );
             setActualQuestion(data.content.actual_question);
             setGameState(GameState.Voting);
+            setVotingEndTime(data.content.voting_end_time);
         },
         [MessageType.VoteResult]: (data) => {
             setGameState(GameState.Finished);
