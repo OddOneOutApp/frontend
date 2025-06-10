@@ -12,6 +12,7 @@ import {
     createSignal,
     onMount,
     onCleanup,
+    Show,
 } from "solid-js";
 import { createStore } from "solid-js/store";
 import {
@@ -177,6 +178,7 @@ const Game: Component<RouteSectionProps> = (props) => {
             setActualQuestion(data.content.actual_question);
             setGameState(GameState.Voting);
             setVotingEndTime(data.content.voting_end_time);
+            setVotedUser(users[0].id || null);
         },
         [MessageType.VoteResult]: (data) => {
             setGameState(GameState.Finished);
@@ -226,6 +228,8 @@ const Game: Component<RouteSectionProps> = (props) => {
         }
         return 60; // Default max time if not in answering or voting state
     };
+
+    const [votedUser, setVotedUser] = createSignal<string | null>(null);
 
     return (
         <>
@@ -295,7 +299,22 @@ const Game: Component<RouteSectionProps> = (props) => {
                     </div>
                     <For each={users}>
                         {(user) => (
-                            <div class="card bg-base-300">
+                            <div
+                                class={`card bg-base-300 ${
+                                    votedUser() === user.id
+                                        ? "outline-3 outline-primary"
+                                        : ""
+                                }`}
+                                onClick={() => {
+                                    if (
+                                        gameState() === GameState.Voting &&
+                                        votingEndTime() !== null &&
+                                        now() < votingEndTime()!
+                                    ) {
+                                        setVotedUser(user.id);
+                                    }
+                                }}
+                            >
                                 <div class="p-4 flex flex-row items-center gap-4">
                                     <div
                                         class={`avatar ${
