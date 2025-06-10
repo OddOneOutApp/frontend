@@ -248,6 +248,25 @@ const Game: Component<RouteSectionProps> = (props) => {
                                     {userID}
                                 </h2>
                                 <p>{answer}</p>
+                                <button
+                                    class="btn btn-primary"
+                                    onclick={() =>
+                                        ws.send(
+                                            JSON.stringify({
+                                                type: "vote",
+                                                content: uuidToArray(userID),
+                                            })
+                                        )
+                                    }
+                                    disabled={gameState() !== GameState.Voting}
+                                >
+                                    Vote for this answer
+                                </button>
+                                <p>
+                                    {JSON.stringify({
+                                        content: uuidToArray(userID),
+                                    })}
+                                </p>
                             </div>
                         </div>
                     )}
