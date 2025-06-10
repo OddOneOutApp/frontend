@@ -257,7 +257,9 @@ const Game: Component<RouteSectionProps> = (props) => {
                     </button>
                 </div>
             </div>
-            <div class="flex flex-row items-center gap-4 mt-2">
+            <div class="card bg-base-200 mt-4">
+                <div class="card-body">
+                    <div class="flex flex-row items-center gap-4">
                 <span class="text-xl whitespace-nowrap">
                     {
                         {
@@ -282,7 +284,14 @@ const Game: Component<RouteSectionProps> = (props) => {
                     </div>
                 </div>
             </div>
-            <h2 class="text-2xl font-semibold mt-4">{question()}</h2>
+            <Show when={gameState() === GameState.Answering}>
+                <div class="card bg-base-200 mt-4">
+                    <div class="card-body">
+                        <span class="text-base">
+                            Please answer the question below within the time
+                            limit.
+                        </span>
+                        <h2 class="text-2xl font-semibold">{question()}</h2>
             <AnswerInput
                 ws={ws}
                 enabled={
@@ -291,6 +300,23 @@ const Game: Component<RouteSectionProps> = (props) => {
                     now() < answersEndTime()!
                 }
             />
+                    </div>
+                </div>
+            </Show>
+            <Show when={gameState() === GameState.Voting}>
+                <div class="card bg-base-200 mt-4">
+                    <div class="card-body">
+                        <p class="text-xl font-semibold">
+                            Vote for the player who you think is the odd one out
+                            and has not answered the following question.
+                        </p>
+                        <h2 class="text-lg font-normal">
+                            <span class="font-semibold">Actual Question: </span>
+                            {actualQuestion()}
+                        </h2>
+                    </div>
+                </div>
+            </Show>
             <div class="mt-4 bg-base-200 card">
                 <div class="card-body">
                     <div class="flex flex-row justify-between items-center mb-2">
