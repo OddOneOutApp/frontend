@@ -146,6 +146,14 @@ const Game: Component<RouteSectionProps> = (props) => {
                 Connection: {states[state()]} ({ws.readyState})
             </p>
             <h1 class="text-2xl font-bold">Game ID: {gameID}</h1>
+            <button
+                class="btn btn-primary"
+                onclick={() =>
+                    ws.send(JSON.stringify({ type: "start", content: 60 }))
+                }
+            >
+                Start Game
+            </button>
             <h2 class="text-xl font-bold">Game State: {gameState()}</h2>
             <h2 class="text-xl font-bold">Question: {question()}</h2>
             <h2 class="text-xl font-bold">
